@@ -8,8 +8,7 @@
 module.exports = {
   resolver: {
     extraNodeModules: {
-        stream: require.resolve('readable-stream'),
-        crypto: require.resolve('expo-crypto')
+        crypto: require.resolve('expo-crypto'),
     },
     sourceExts: ['jsx', 'js', 'ts', 'tsx']
   },

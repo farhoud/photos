@@ -1,25 +1,28 @@
-import React, { useCallback, useMemo, useEffect,  } from 'react';
-import { View, Text, StyleSheet, Animated, SectionListData, TouchableOpacity } from 'react-native';
-import BottomSheet, { useBottomSheet, BottomSheetSectionList, BottomSheetFlatList } from '@gorhom/bottom-sheet';
+import React, { useCallback, useMemo, useEffect, useState } from 'react';
+import { View, Text, StyleSheet, Animated, SectionListData, TouchableOpacity, useWindowDimensions } from 'react-native';
+import BottomSheet, { BottomSheetSectionList, BottomSheetFlatList } from '@gorhom/bottom-sheet';
 import { MaterialIcons } from '@expo/vector-icons';
 import {
 	useRecoilState,
   } from 'recoil';
-  import {contactsState} from '../../states';
+  import { albumsState } from '../../states';
+  import { BottomSheetElement } from '../../types/interfaces';
 
 interface Props {
   bottomSheetRef: React.RefObject<BottomSheet>;
 	opacity: Animated.Value;
 	FOOTER_HEIGHT: number;
-	methods: {shareLink: Function, shareWithContact: Function}
+	methods: {addToAlbum: Function, ChangeLastAlbumName: Function}
 }
 
-const ShareSheet: React.FC<Props> = (props) => {
+const AlbumSheet: React.FC<Props> = (props) => {
+	const SCREEN_HEIGHT = useWindowDimensions().height;
+	const [albums] = useRecoilState(albumsState);
 	useEffect(()=>{
 		props.bottomSheetRef?.current?.close();
 	}, [])
   // variables
-  const snapPoints = useMemo(() => [-1, 300], []);
+  const snapPoints = useMemo(() => [-1, 300, SCREEN_HEIGHT], []);
 
   // callbacks
   const handleSheetChanges = useCallback((index: number) => {
@@ -32,51 +35,45 @@ const ShareSheet: React.FC<Props> = (props) => {
 		}
   }, []);
 
-	const sections = 
-      [
-				{
-          title: "Send in Photos",
-          data: [[
+	const [sections, setSections] = useState( 
+    [
+		{
+        	title: "Create",
+        	data: [
 						{
-							'name': 'New contact',
-							'icon': 'group-add',
-							'key': 'newContact',
-							'action': ()=>{props.methods.shareWithContact();}
+							'name': 'Album',
+							'icon': 'photo-album',
+							'key': 'newAlbum',
+							'action': ()=>{}
 						},
-					]],
-					key: '1'
-        },
-				{
-          title: "Share to Apps",
-          data: [[
-						{
-							'name': 'Create Link',
-							'icon': 'add-link',
-							'key': 'createLink',
-							'action': props.methods.shareLink
-						},
-					]],
-					key: '2'
+			],
+			key: '1'
+        },	
+		{
+        	title: "All Albums",
+        	data: [],
+			key: '2'
         }
-			];
+	]);
+	
+	useEffect(() => {
+		if(albums && albums.length>0 && sections && sections.length > 0){
+			let section_t = sections;
+			albums.map((album) => {
+				section_t[1].data.push({
+					'name': album.name,
+					'icon': '',
+					'key': album.name,
+					action: () => {props.methods.addToAlbum(album.name);}
+				});
+			});
+			setSections(section_t);
+		}
+	}, [albums, sections]);
 
 	const renderSectionHeader = useCallback(
     ({ section } : {
-			section: SectionListData<{
-					name: string;
-					icon: string;
-					key: string;
-					action: any;
-			}[], {
-					title: string;
-					data: {
-							name: string;
-							icon: string;
-							key: string;
-							action: any
-					}[][];
-					key: string;
-			}>}) => (
+			section: any}) => (
       <View style={styles.sectionHeaderContainer}>
         <Text>{section.title}</Text>
       </View>
@@ -84,54 +81,25 @@ const ShareSheet: React.FC<Props> = (props) => {
     []
   );
 
-	const renderItem = useCallback(
-    ({ item }: {item: {
-			name: string;
-			icon: string;
-			key: string;
-			action: any;
-	}}) => {
-			console.log(item);
-			return itemBuilder(item.name, item.icon, item.action)
-    },
-    []
-  );
-
   const renderList = useCallback(
-    ({ item }:{item:{
-			name: string;
-			icon: string;
-			key: string;
-			action: any;
-	}[]}) => {
-			console.log(item);
-			return (
-      <View style={styles.listContainer}>
-        <BottomSheetFlatList
-          data={item}
-          keyExtractor={(item, index) => item.key+'_flatList'}
-          renderItem={renderItem}
-          contentContainerStyle={styles.flatListContentContainer}
-					horizontal={true}
-        />
-      </View>
-    )},
+    ({ item }:{item:BottomSheetElement}) => {
+		console.log(item);
+		return (
+		<View style={styles.listContainer}>
+			<TouchableOpacity 
+				onPress={item.action}
+				style={styles.itemContainer}
+			>
+				<View style={styles.itemContainer}>
+					<MaterialIcons name={item.icon as any} size={40} color="blue" />
+					<Text style={styles.itemText}>{item.name}</Text>
+				</View>
+			</TouchableOpacity>
+		</View>
+		);
+	},
     []
   );
-	
-	const itemBuilder = (name: string, icon: any, onPress: any) => {
-		return (
-			<TouchableOpacity 
-			onPress={onPress}
-        style={styles.itemContainer}
-      >
-				<View style={styles.itemContainer}>
-            <MaterialIcons name={icon} size={40} color="blue" />
-						<Text style={styles.itemText}>{name}</Text>
-						</View>
-      </TouchableOpacity>
-		)
-	}
 
   // renders
   return (
@@ -219,4 +187,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ShareSheet;
+export default AlbumSheet;
