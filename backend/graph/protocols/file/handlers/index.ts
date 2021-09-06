@@ -1,5 +1,5 @@
 import pipe from 'it-pipe';
-import { partition, firstValue } from 'async-later';
+import { partition, firstValue } from '../../../async-later';
 import { map } from 'streaming-iterables';
 import { ProtocolHandler, Response } from '../..';
 import { Request } from '../schema';

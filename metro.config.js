@@ -9,8 +9,7 @@ module.exports = {
   resolver: {
     extraNodeModules: {
         stream: require.resolve('readable-stream'),
-        crypto: require.resolve('react-native-crypto'),
-        // "node-fetch": require.resolve('isomorphic-fetch')
+        crypto: require.resolve('expo-crypto')
     },
     sourceExts: ['jsx', 'js', 'ts', 'tsx']
   },
