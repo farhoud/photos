@@ -3,10 +3,6 @@ import {useNavigation} from '@react-navigation/native';
 import React, {useEffect, useRef, useState} from 'react';
 import {Text, View, useWindowDimensions, StyleSheet, ScrollView, TouchableHighlight} from 'react-native';
 
-import {
-  useRecoilState,
-} from 'recoil';
-import {photosState, } from '../states';
 import {default as Reanimated,} from 'react-native-reanimated';
 interface Props {
   HEADER_HEIGHT: number;
@@ -14,7 +10,7 @@ interface Props {
   headerShown: Reanimated.SharedValue<number>;
 }
 
-const PhotosContainer: React.FC<Props> = (props) => {
+const SettingsContainer: React.FC<Props> = (props) => {
   const SCREEN_WIDTH = useWindowDimensions().width;
   const SCREEN_HEIGHT = useWindowDimensions().height;
 	const navigation = useNavigation();
@@ -81,4 +77,4 @@ const styles = StyleSheet.create({
 const isEqual = (prevProps:Props, nextProps:Props) => {
   return (prevProps.HEADER_HEIGHT === nextProps.HEADER_HEIGHT);
 }
-export default React.memo(PhotosContainer, isEqual);
+export default React.memo(SettingsContainer, isEqual);

@@ -1,26 +1,30 @@
 import React from 'react';
-import 'text-encoding';
-import 'react-native-get-random-values'
-import 'react-native-polyfill-globals/auto';
-import "react-native-wasm";
 import AppNavigation from './navigation/AppNavigation';
-import {
-  RecoilRoot,
-} from 'recoil';
-import { LogBox } from 'react-native';
-import { RootSiblingParent } from 'react-native-root-siblings';
-
+import {RecoilRoot} from 'recoil';
+import {LogBox} from 'react-native';
+import {RootSiblingParent} from 'react-native-root-siblings';
+import Borg from '@functionland/rn-borg/src/index';
+import MediasManager from "./components/MediasManager";
+import Sync from "./components/Sync";
+import ScrollContextProvider from "./components/Shared/ScrollContext";
 
 LogBox.ignoreLogs(['Setting a timer']);
 
 const App = () => {
-  return (
-    <RecoilRoot>
+	return (
+		<RecoilRoot>
 			<RootSiblingParent>
-      	<AppNavigation />
+				<Borg>
+					{/*<Sync/>*/}
+					<MediasManager/>
+					<ScrollContextProvider>
+						<AppNavigation/>
+					</ScrollContextProvider>
+				</Borg>
 			</RootSiblingParent>
-    </RecoilRoot>
-  );
+		</RecoilRoot>
+	);
 };
+
 
 export default App;

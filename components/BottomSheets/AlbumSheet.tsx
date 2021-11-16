@@ -1,4 +1,5 @@
 import React, { useCallback, useMemo, useEffect, useState } from 'react';
+import {useNavigation} from '@react-navigation/native';
 import { View, Text, StyleSheet, Animated, SectionListData, TouchableOpacity, useWindowDimensions } from 'react-native';
 import BottomSheet, { BottomSheetSectionList, BottomSheetFlatList } from '@gorhom/bottom-sheet';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -17,12 +18,20 @@ interface Props {
 
 const AlbumSheet: React.FC<Props> = (props) => {
 	const SCREEN_HEIGHT = useWindowDimensions().height;
+	const SCREEN_WIDTH = useWindowDimensions().width;
+	const navigation = useNavigation();
 	const [albums] = useRecoilState(albumsState);
 	useEffect(()=>{
 		props.bottomSheetRef?.current?.close();
 	}, [])
   // variables
   const snapPoints = useMemo(() => [-1, 300, SCREEN_HEIGHT], []);
+  const goToPage = (pageName:string) => {
+	navigation.navigate(pageName, {
+		ChangeLastAlbumName: props.methods.ChangeLastAlbumName,
+		addToAlbum: props.methods.addToAlbum,
+	});
+  }
 
   // callbacks
   const handleSheetChanges = useCallback((index: number) => {
@@ -44,7 +53,9 @@ const AlbumSheet: React.FC<Props> = (props) => {
 							'name': 'Album',
 							'icon': 'photo-album',
 							'key': 'newAlbum',
-							'action': ()=>{}
+							'action': () => {
+								goToPage('NewAlbum');
+							}
 						},
 			],
 			key: '1'
@@ -58,23 +69,30 @@ const AlbumSheet: React.FC<Props> = (props) => {
 	
 	useEffect(() => {
 		if(albums && albums.length>0 && sections && sections.length > 0){
-			let section_t = sections;
+			let temp : any = [];
 			albums.map((album) => {
-				section_t[1].data.push({
-					'name': album.name,
-					'icon': '',
-					'key': album.name,
-					action: () => {props.methods.addToAlbum(album.name);}
-				});
+					let isFound = sections[1].data.findIndex(x=>x.key===album.name);
+					if(isFound === -1){
+						temp.push({
+							'name': album.name,
+							'icon': '',
+							'key': album.name,
+							action: () => {
+								props.methods.ChangeLastAlbumName(album.name);
+								props.methods.addToAlbum();
+							}
+						});
+					}
 			});
-			setSections(section_t);
+			setSections(d=>(
+				[...d.slice(0,1), {...d[1], data:[...d[1].data, ...temp]}]
+			));
 		}
-	}, [albums, sections]);
+	}, [albums, sections?.length > 0]);
 
 	const renderSectionHeader = useCallback(
-    ({ section } : {
-			section: any}) => (
-      <View style={styles.sectionHeaderContainer}>
+    ({ section } : {section: any}) => (
+      <View style={[styles.sectionHeaderContainer,{width: SCREEN_WIDTH}]}>
         <Text>{section.title}</Text>
       </View>
     ),
@@ -138,53 +156,54 @@ const AlbumSheet: React.FC<Props> = (props) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 1,
-    backgroundColor: 'rgba(52, 52, 52, 0.7)',
-	width: '100%',
-	height: '100%',
-	position: 'absolute',
-	bottom: 0,
-	right: 0,
-  },
-  sectionListContentContainer: {
-    flex: 1,
-    alignItems: 'flex-start',
+	container: {
+		flex: 1,
+		padding: 1,
+		backgroundColor: 'rgba(52, 52, 52, 0.7)',
+		width: '100%',
+		height: '100%',
+		position: 'absolute',
+		bottom: 0,
+		right: 0,
+	},
+	sectionListContentContainer: {
+		flex: 1,
+		alignItems: 'flex-start',
 		paddingLeft: 5,
 		paddingRight: 5
-  },
+	},
 	flatListContentContainer: {
-    height: 100,
+    	height: 100,
 		width: '100%',
-    alignItems: 'center',
-  },
+    	alignItems: 'flex-start',
+  	},
 	bottomSheetContainer: {
 		flex: 1,
-    alignItems: 'center',
+		alignItems: 'flex-start',
+		width: '100%',
 	},
 	sectionHeaderContainer: {
 		width: '100%',
 		height: 30,
-  },
-  itemContainer: {
+	},
+	itemContainer: {
 		width: 100,
 		height: 100,
 		flex: 1,
-    flexDirection:'column',
+		flexDirection:'column',
 		alignItems: 'center'
-  },
+	},
 	listContainer: {
 		height: 100,
 		width: '100%',
 		borderBottomColor: 'lightgrey',
 		borderBottomWidth: 1
-  },
+  	},
 	itemText:{
-    color: 'grey',
-    position: 'relative',
-    marginRight:5
-  },
+		color: 'grey',
+		position: 'relative',
+		marginRight:5
+  	},
 });
 
 export default AlbumSheet;
